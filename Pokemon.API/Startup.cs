@@ -1,15 +1,22 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 using Pokemon.API.Context;
 using Pokemon.API.Interfaces;
-using Pokemon.API.Repository;
 using Pokemon.API.Services;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Pokemon.API
 {
@@ -25,14 +32,14 @@ namespace Pokemon.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
 
-            services.AddTransient<IPokemon, PokemonServices>();
-            services.AddTransient<IPokemonRepository, PokemonRepository>();
+            services.AddControllers();
 
             services.AddDbContext<PokemonContext>(
                     options => options.UseSqlite("name=ConnectionStrings:DefaultConnection"));
 
+            services.AddScoped<PokemonServices>();
+            services.AddScoped<IPokemon, PokemonServices>();
 
             services.AddSwaggerGen(c =>
             {

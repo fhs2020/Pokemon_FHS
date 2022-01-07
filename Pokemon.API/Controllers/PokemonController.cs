@@ -43,7 +43,7 @@ namespace Pokemon.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CadastroPokemonMestre(PokemonModel mestrePokemon)
         {
-            var pokemonMestre = await _pokemonServices.CadastrarPokemonMestre(mestrePokemon.Id);
+            var pokemonMestre = await _pokemonServices.CadastrarPokemonMestre(mestrePokemon);
 
             return Ok(pokemonMestre);
         }
@@ -52,7 +52,9 @@ namespace Pokemon.API.Controllers
         [HttpPost]
         public async Task<IActionResult> PokemonCapturado(int idDoPokemonCapturado)
         {
-            var pokemonCapturado = await _pokemonServices.CadastrarPokemonCapturado(idDoPokemonCapturado);
+            var pokemon = await _pokemon.GetPokemon(idDoPokemonCapturado);
+
+            var pokemonCapturado = await _pokemonServices.CadastrarPokemonCapturado(pokemon);
 
             return Ok(pokemonCapturado);
         }

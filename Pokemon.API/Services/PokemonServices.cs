@@ -1,10 +1,12 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
+
 using Newtonsoft.Json;
 
+using Pokemon.API.Context;
 using Pokemon.API.Domain;
 using Pokemon.API.Helper;
 using Pokemon.API.Interfaces;
-using Pokemon.API.Repository;
 
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +18,13 @@ namespace Pokemon.API.Services
     public class PokemonServices : IPokemon
     {
         PokeAPI _api = new PokeAPI();
-        private IPokemonRepository _pokemonRepository;
 
-        public PokemonServices(IPokemonRepository pokemonRepository)
+        private readonly PokemonContext _dbContext;
+
+        public PokemonServices(PokemonContext pokemonContext)
         {
-            _pokemonRepository = pokemonRepository;
+            _dbContext = pokemonContext;
+
         }
 
         public async Task<Request> GetPokemones()
@@ -52,34 +56,49 @@ namespace Pokemon.API.Services
             return request;
         }
 
-        public async Task<int> CadastrarPokemonCapturado(int id)
+        public async Task<PokemonModel> CadastrarPokemonCapturado(Rootobject pokemonObj)
         {
-            return await CadastrarPokemon(id, false, true);
+            var pokemon = new PokemonModel
+            {
+                Id = pokemonObj.id,
+                Nome = pokemonObj.name
+            };
+
+            return await CreateUpdatePokemon(pokemon);
         }
 
-        public async Task<int> CadastrarPokemonMestre(int id)
+        public async Task<PokemonModel> CadastrarPokemonMestre(PokemonModel pokemonModel)
         {
-            return await CadastrarPokemon(id, true, false);
+            _dbContext.Pokemon.Add(pokemonModel);
+            await _dbContext.SaveChangesAsync();
+
+            return pokemonModel;
         }
 
         public async Task<List<PokemonModel>> ListarPokemonCapturados()
         {
-            var pokemonCapturados = await _pokemonRepository.GetAllPokemons();
+            var pokemonCapturados = await GetAllPokemons();
 
             return pokemonCapturados.Where(x => x.PokemonFoiCapturado == true).ToList();
         }
 
-        private async Task<int> CadastrarPokemon(int id, bool? ehPokemonMestre, bool? pokemonCapturado)
+        private async Task<List<PokemonModel>> GetAllPokemons()
         {
-            var pokemon = await _pokemonRepository.GetPokemonById(id);
+            var pokemons = await _dbContext.Pokemon.ToListAsync();
 
-            pokemon.PokemonFoiCapturado = ehPokemonMestre;
-            pokemon.ehPokemonMestre = pokemonCapturado;
-
-            var pokemontCapturado = _pokemonRepository.CreateUpdatePokemon(pokemon);
-
-            return pokemontCapturado.Id;
+            return pokemons;
         }
 
+        private async Task<PokemonModel> CreateUpdatePokemon(PokemonModel pokemon)
+        {
+            if (pokemon.Id > 0)
+                _dbContext.Update(pokemon);
+            else
+                _dbContext.Pokemon.Add(pokemon);
+
+            await _dbContext.SaveChangesAsync();
+
+            return pokemon;
+        }
     }
 }

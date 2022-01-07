@@ -11,8 +11,8 @@ namespace Pokemon.API.Interfaces
     {
         Task<Request> GetPokemones();
         Task<Rootobject> GetPokemon(int id);
-        Task<int> CadastrarPokemonCapturado(int id);
-        Task<int> CadastrarPokemonMestre(int id);
+        Task<PokemonModel> CadastrarPokemonCapturado(Rootobject pokemonObj);
+        Task<PokemonModel> CadastrarPokemonMestre(PokemonModel pokemonModel);
         Task<List<PokemonModel>> ListarPokemonCapturados();
     }
 }
