@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
@@ -8,6 +9,7 @@ using Pokemon.API.Domain;
 using Pokemon.API.Helper;
 using Pokemon.API.Interfaces;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -31,7 +33,8 @@ namespace Pokemon.API.Services
         {
             var Request = new Request();
             HttpClient client = _api.initial();
-            HttpResponseMessage res = await client.GetAsync("?limit=10&offset=1");
+            int randomOffset = new Random().Next(1, 1108);
+            HttpResponseMessage res = await client.GetAsync("?limit=10&offset="+ randomOffset);
 
             if (res.IsSuccessStatusCode)
             {
@@ -61,7 +64,8 @@ namespace Pokemon.API.Services
             var pokemon = new PokemonModel
             {
                 Id = pokemonObj.id,
-                Nome = pokemonObj.name
+                Nome = pokemonObj.name,
+                PokemonFoiCapturado = true
             };
 
             return await CreateUpdatePokemon(pokemon);
@@ -69,6 +73,7 @@ namespace Pokemon.API.Services
 
         public async Task<PokemonModel> CadastrarPokemonMestre(PokemonModel pokemonModel)
         {
+            pokemonModel.ehPokemonMestre = true;
             _dbContext.Pokemon.Add(pokemonModel);
             await _dbContext.SaveChangesAsync();
 

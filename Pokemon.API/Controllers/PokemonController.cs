@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 using Pokemon.API.Domain;
+using Pokemon.API.Dto;
 using Pokemon.API.Interfaces;
 using Pokemon.API.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Pokemon.API.Controllers
@@ -15,57 +20,120 @@ namespace Pokemon.API.Controllers
     {
         private readonly IPokemon _pokemon;
         private readonly PokemonServices _pokemonServices;
+        protected ResponseDto _response;
 
         public PokemonController(IPokemon pokemon, PokemonServices pokemonServices)
         {
             _pokemon = pokemon;
             _pokemonServices = pokemonServices;
+            _response = new ResponseDto();
         }
 
         [Route("getPokemones")]
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<Object> Get()
         {
-            var result = await _pokemon.GetPokemones();
+            try
+            {
+                var result = await _pokemon.GetPokemones();
 
-            return Ok(result);
+                _response.Result = result;
+            }
+            catch (Exception ex)
+            {
+                _response.isSuccess = false;
+                _response.ErrorMessage = new List<string>() { ex.ToString() };
+            }
+
+            return _response;
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<Object> GetById(int id)
         {
-            var result = await _pokemon.GetPokemon(id);
+            try
+            {
+                var result = await _pokemon.GetPokemon(id);
+                _response.Result = result;
+            }
+            catch (Exception ex)
+            {
+                _response.isSuccess = false;
+                _response.ErrorMessage = new List<string>() { ex.ToString() };
+            }
 
-            return Ok(result);
+            return _response;
         }
 
         [Route("CadastroPokemonMestre")]
         [HttpPost]
-        public async Task<IActionResult> CadastroPokemonMestre(PokemonModel mestrePokemon)
+        public async Task<Object> CadastroPokemonMestre([FromBody]PokemonModel mestrePokemon)
         {
-            var pokemonMestre = await _pokemonServices.CadastrarPokemonMestre(mestrePokemon);
 
-            return Ok(pokemonMestre);
+            try
+            {
+                if (ModelState.IsValid) 
+                {
+                    var result = await _pokemonServices.CadastrarPokemonMestre(mestrePokemon);
+
+                    _response.Result = result;
+                }
+                else
+                {
+                    _response.isSuccess = false;
+
+                    return HttpStatusCode.BadRequest;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.isSuccess = false;
+                _response.ErrorMessage = new List<string>() { ex.ToString() };
+            }
+
+            return _response;
         }
 
         [Route("PokemonCapturado")]
         [HttpPost]
-        public async Task<IActionResult> PokemonCapturado(int idDoPokemonCapturado)
+        public async Task<Object> PokemonCapturado(int idDoPokemonCapturado)
         {
-            var pokemon = await _pokemon.GetPokemon(idDoPokemonCapturado);
+            try
+            {
+                var pokemon = await _pokemon.GetPokemon(idDoPokemonCapturado);
 
-            var pokemonCapturado = await _pokemonServices.CadastrarPokemonCapturado(pokemon);
+                var result = await _pokemonServices.CadastrarPokemonCapturado(pokemon);
 
-            return Ok(pokemonCapturado);
+                _response.Result = result;
+            }
+            catch (Exception ex)
+            {
+                _response.isSuccess = false;
+                _response.ErrorMessage = new List<string>() { ex.ToString() };
+            }
+
+            return _response;
         }
 
         [Route("ListarPokemonsCapturado")]
         [HttpGet]
-        public async Task<IActionResult> ListarPokemonsCapturado()
+        public async Task<Object> ListarPokemonsCapturado()
         {
-            var pokemonCapturados = await _pokemonServices.ListarPokemonCapturados();
+            try
+            {
+                var result = await _pokemonServices.ListarPokemonCapturados();
 
-            return Ok(pokemonCapturados);
+                _response.Result = result;  
+
+            }
+            catch (Exception ex)
+            {
+                _response.isSuccess = false;
+                _response.ErrorMessage = new List<string>() { ex.ToString() };
+            }
+
+            return _response;
         }
     }
 }
