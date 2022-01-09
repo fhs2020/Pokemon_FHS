@@ -1,6 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 using Newtonsoft.Json;
 
@@ -34,7 +32,7 @@ namespace Pokemon.API.Services
             var Request = new Request();
             HttpClient client = _api.initial();
             int randomOffset = new Random().Next(1, 1108);
-            HttpResponseMessage res = await client.GetAsync("?limit=10&offset="+ randomOffset);
+            HttpResponseMessage res = await client.GetAsync("?limit=10&offset=" + randomOffset);
 
             if (res.IsSuccessStatusCode)
             {
